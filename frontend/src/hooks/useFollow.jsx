@@ -23,7 +23,7 @@ const useFollow = () => {
                 // follow from suggested users
                 queryClient.invalidateQueries(['suggestedUsers']),
                 // follow from profile page. The follow button should be updated to unfollow
-                queryClient.invalidateQueries(['suggestedUsers']),
+                queryClient.invalidateQueries(['authUser']),
             ]);
 
             toast.success('Followed successfully');
