@@ -9,11 +9,16 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";
 import LoadingSpinner from "./LoadingSpinner";
 import { useQueryClient } from "@tanstack/react-query";
+import { formatPostDate } from "../../utils/date";
 
 const Post = ({ post }) => {
     const [comment, setComment] = useState("");
     const { data: authUser } = useQuery({ queryKey: ['authUser'] });
     const queryClient = useQueryClient();
+    const postOwner = post.user;
+    const isLiked = post.likes.includes(authUser._id);
+    const isMyPost = authUser._id === post.user._id;
+    const formattedDate = formatPostDate(post.createdAt);
 
     const { mutate: deletePost, isPending: isDeleting } = useMutation({
         mutationFn: async () => {
@@ -71,14 +76,41 @@ const Post = ({ post }) => {
         onError: (error) => { toast.error(error.message) }
     });
 
-    const postOwner = post.user;
-    const isLiked = post.likes.includes(authUser._id);
+    const { mutate: commentPost, isPending: isCommenting } = useMutation({
+        mutationFn: async () => {
+            try {
+                const res = await fetch(`/api/posts/comment/${post._id}`, {
+                    method: 'POST',
+                    // headers is needed to tell the server that the body is in JSON format
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    // body is needed to send the data to the server
+                    body: JSON.stringify({ text: comment })
+                })
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || "Failed to comment post");
+                return data;
+            } catch (error) {
+                throw new Error(error);
+            }
+        },
+        onSuccess: () => {
+            // toast is a library to show notifications
+            toast.success("Comment posted successfully");
+            // invalidate the posts query to refetch the posts
+            // so posts disappear when clicked on delete without refreshing the page
+            setComment("");
+            // invalidate the posts query to refetch the posts
+            // invalidate means refetch the data
+            queryClient.invalidateQueries({
+                queryKey: ['posts']
+            })
+        },
+        onError: (error) => { toast.error(error.message) }
+    })
 
-    const isMyPost = authUser._id === post.user._id;
 
-    const formattedDate = "1h";
-
-    const isCommenting = false;
 
     const handleDeletePost = () => {
         deletePost();
@@ -86,6 +118,8 @@ const Post = ({ post }) => {
 
     const handlePostComment = (e) => {
         e.preventDefault();
+        if (isCommenting) return;
+        commentPost();
     };
 
     const handleLikePost = () => {

@@ -49,9 +49,12 @@ const Posts = ({ feedType }) => {
             {!isLoading && !isRefetching && posts?.length === 0 && <p className='text-center my-4'>No posts in this tab. Switch 👻</p>}
             {!isLoading && !isRefetching && posts && (
                 <div>
-                    {posts.map((post) => (
-                        <Post key={post._id} post={post} />
-                    ))}
+                    {posts
+                        .slice() // Create a shallow copy of the posts array to avoid mutating the original array
+                        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) // Sort posts by createdAt in descending order
+                        .map((post) => (
+                            <Post key={post._id} post={post} />
+                        ))}
                 </div>
             )}
         </>
