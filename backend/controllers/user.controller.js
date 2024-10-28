@@ -114,7 +114,7 @@ export const updateUser = async (req, res) => {
         if (profileImg) {
             if (user.profileImg) {
                 // destroy the existing one in the cloudinary account
-                await cloudinary.uploader.destroy(user.profileImg.split("/".pop().split(".")[0]));
+                await cloudinary.uploader.destroy(user.profileImg.split("/").pop().split(".")[0]);
             }
             const uploadedResponse = await cloudinary.uploader.upload(profileImg);
             profileImg = uploadedResponse.secure_url;
@@ -123,7 +123,7 @@ export const updateUser = async (req, res) => {
         if (coverImg) {
             if (user.coverImg) {
                 // destroy the existing one in the cloudinary account
-                await cloudinary.uploader.destroy(user.coverImg.split("/".pop().split(".")[0]));
+                await cloudinary.uploader.destroy(user.coverImg.split("/").pop().split(".")[0]);
             }
             const uploadedResponse = await cloudinary.uploader.upload(coverImg);
             coverImg = uploadedResponse.secure_url;
